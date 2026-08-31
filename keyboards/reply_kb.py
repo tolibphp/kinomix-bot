@@ -52,7 +52,7 @@ def get_admin_menu_kb() -> ReplyKeyboardMarkup:
                 KeyboardButton(
                     text=" Admin panel",
                     icon_custom_emoji_id=ID_CROWN,
-                    style="secondary"
+                    style="primary"
                 ),
             ],
             [

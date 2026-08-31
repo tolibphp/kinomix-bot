@@ -138,7 +138,7 @@ def get_search_results_kb(
             text=" Bosh menyu",
             callback_data="main_menu",
             icon_custom_emoji_id=ID_HOME,
-            style="secondary"
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -162,7 +162,7 @@ def get_popular_movies_kb(movies: list) -> InlineKeyboardMarkup:
             text=" Bosh menyu",
             callback_data="main_menu",
             icon_custom_emoji_id=ID_HOME,
-            style="secondary"
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -185,7 +185,7 @@ def get_recent_movies_kb(movies: list) -> InlineKeyboardMarkup:
             text=" Bosh menyu",
             callback_data="main_menu",
             icon_custom_emoji_id=ID_HOME,
-            style="secondary"
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -262,7 +262,7 @@ def get_admin_panel_kb() -> InlineKeyboardMarkup:
             text=" Bosh menyu",
             callback_data="main_menu",
             icon_custom_emoji_id=ID_HOME,
-            style="secondary"
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -416,7 +416,7 @@ def get_movie_list_kb(
             text=" Admin panel",
             callback_data="admin:panel",
             icon_custom_emoji_id=ID_BACK,
-            style="secondary"
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -461,7 +461,7 @@ def get_confirm_delete_kb(code: str) -> InlineKeyboardMarkup:
                     text=" Yo'q, bekor qilish",
                     callback_data="admin:movie_list",
                     icon_custom_emoji_id=ID_CROSS,
-                    style="secondary"
+                    style="primary"
                 ),
             ]
         ]
