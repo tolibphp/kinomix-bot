@@ -71,7 +71,15 @@ class SubscriptionMiddleware(BaseMiddleware):
                         }
                     )
             except Exception:
-                pass
+                # Agar user topilmasa yoki xatolik bersa, demak obuna emas!
+                not_subscribed.append(
+                    {
+                        "channel_id": ch["channel_id"],
+                        "channel_username": ch.get("channel_username"),
+                        "channel_title": ch.get("channel_title"),
+                        "invite_link": ch.get("invite_link"),
+                    }
+                )
 
         if not_subscribed:
             text = (
