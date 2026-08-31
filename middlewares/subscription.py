@@ -63,6 +63,22 @@ class SubscriptionMiddleware(BaseMiddleware):
                     chat_id=ch["channel_id"], user_id=user.id
                 )
                 if member.status in ("left", "kicked"):
+                    # Zayavka tashlaganligini tekshiramiz
+                    has_req = await self.db.has_join_request(user.id, ch["channel_id"])
+                    if not has_req:
+                        not_subscribed.append(
+                            {
+                                "channel_id": ch["channel_id"],
+                                "channel_username": ch.get("channel_username"),
+                                "channel_title": ch.get("channel_title"),
+                                "invite_link": ch.get("invite_link"),
+                            }
+                        )
+            except Exception:
+                # Agar user topilmasa yoki xatolik bersa, demak obuna emas!
+                # Lekin zayavka tashlagan bo'lsa o'tkazib yuboramiz
+                has_req = await self.db.has_join_request(user.id, ch["channel_id"])
+                if not has_req:
                     not_subscribed.append(
                         {
                             "channel_id": ch["channel_id"],
@@ -71,16 +87,6 @@ class SubscriptionMiddleware(BaseMiddleware):
                             "invite_link": ch.get("invite_link"),
                         }
                     )
-            except Exception:
-                # Agar user topilmasa yoki xatolik bersa, demak obuna emas!
-                not_subscribed.append(
-                    {
-                        "channel_id": ch["channel_id"],
-                        "channel_username": ch.get("channel_username"),
-                        "channel_title": ch.get("channel_title"),
-                        "invite_link": ch.get("invite_link"),
-                    }
-                )
 
         if not_subscribed:
             text = (

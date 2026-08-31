@@ -211,19 +211,16 @@ async def reply_about(message: Message, state: FSMContext) -> None:
     )
 
 @router.chat_join_request()
-async def approve_join_request(join_request: ChatJoinRequest, bot: Bot) -> None:
-    """Maxfiy kanalga zayavka tashlaganlarni avtomat qabul qiladi."""
+async def handle_join_request(join_request: ChatJoinRequest, bot: Bot, db: Database) -> None:
+    """Maxfiy kanalga zayavka tashlaganlarni bazaga saqlaydi va qabul qilmay turib ruxsat beradi."""
     try:
-        await bot.approve_chat_join_request(
-            chat_id=join_request.chat.id,
-            user_id=join_request.from_user.id
-        )
+        await db.add_join_request(join_request.from_user.id, join_request.chat.id)
         await bot.send_message(
             chat_id=join_request.from_user.id,
-            text=f"✅ <b>{join_request.chat.title}</b> kanaliga so'rovingiz qabul qilindi!\nEndi botdan bemalol foydalanishingiz mumkin.",
+            text=f"✅ <b>{join_request.chat.title}</b> kanaliga so'rovingiz yuborildi!\nEndi botdan bemalol foydalanishingiz mumkin.",
             parse_mode="HTML"
         )
-    except Exception:
+    except Exception as e:
         pass
 
 

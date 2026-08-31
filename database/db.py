@@ -66,6 +66,16 @@ class Database:
         except Exception:
             pass
             
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS join_requests (
+                user_id INTEGER,
+                channel_id INTEGER,
+                requested_at TEXT DEFAULT (datetime('now')),
+                PRIMARY KEY (user_id, channel_id)
+            )
+            """
+        )
         await self.db.commit()
 
     # ── Foydalanuvchilar ────────────────────────────
@@ -214,6 +224,21 @@ class Database:
     async def get_channels(self) -> list[aiosqlite.Row]:
         async with self.db.execute("SELECT * FROM channels") as cursor:
             return await cursor.fetchall()
+
+    async def add_join_request(self, user_id: int, channel_id: int) -> None:
+        await self.db.execute(
+            "INSERT OR IGNORE INTO join_requests (user_id, channel_id) VALUES (?, ?)",
+            (user_id, channel_id)
+        )
+        await self.db.commit()
+
+    async def has_join_request(self, user_id: int, channel_id: int) -> bool:
+        async with self.db.execute(
+            "SELECT 1 FROM join_requests WHERE user_id = ? AND channel_id = ?",
+            (user_id, channel_id)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return row is not None
 
     async def remove_channel(self, channel_id: int) -> bool:
         cursor = await self.db.execute(
