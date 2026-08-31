@@ -5,6 +5,12 @@ from __future__ import annotations
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from utils.premium_emoji import (
+    ID_FORWARD, ID_CHECK, ID_SEARCH, ID_FIRE, ID_SPARKLE, 
+    ID_CLAPPER, ID_BACK, ID_HOME, ID_ADD, ID_DELETE, 
+    ID_FOLDER, ID_CHART, ID_MEGAPHONE, ID_CHANNEL, ID_CROSS
+)
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  FOYDALANUVCHI KLAVIATURALARI
@@ -21,14 +27,18 @@ def get_subscription_kb(
         title = ch["channel_title"] or username
         builder.row(
             InlineKeyboardButton(
-                text=f"\u25b6 {title}",
+                text=f" {title}",
                 url=f"https://t.me/{username.lstrip('@')}",
+                icon_custom_emoji_id=ID_FORWARD,
+                style="primary"
             )
         )
     builder.row(
         InlineKeyboardButton(
-            text="\u2713 Tekshirish",
+            text=" Tekshirish",
             callback_data="check_subscription",
+            icon_custom_emoji_id=ID_CHECK,
+            style="success"
         )
     )
     return builder.as_markup()
@@ -39,18 +49,24 @@ def get_main_inline_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u25c8 Kino qidirish",
+            text=" Kino qidirish",
             callback_data="search_movie",
+            icon_custom_emoji_id=ID_SEARCH,
+            style="primary"
         ),
         InlineKeyboardButton(
-            text="\u2606 Mashhurlar",
+            text=" Mashhurlar",
             callback_data="popular_movies",
+            icon_custom_emoji_id=ID_FIRE,
+            style="success"
         ),
     )
     builder.row(
         InlineKeyboardButton(
-            text="\u2737 Yangi kinolar",
+            text=" Yangi kinolar",
             callback_data="recent_movies",
+            icon_custom_emoji_id=ID_SPARKLE,
+            style="success"
         ),
     )
     return builder.as_markup()
@@ -61,12 +77,16 @@ def get_movie_kb(code: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u25c8 Qidirish",
+            text=" Qidirish",
             callback_data="search_movie",
+            icon_custom_emoji_id=ID_SEARCH,
+            style="primary"
         ),
         InlineKeyboardButton(
-            text="\u2606 Mashhurlar",
+            text=" Mashhurlar",
             callback_data="popular_movies",
+            icon_custom_emoji_id=ID_FIRE,
+            style="success"
         ),
     )
     return builder.as_markup()
@@ -84,8 +104,10 @@ def get_search_results_kb(
     for movie in page_movies:
         builder.row(
             InlineKeyboardButton(
-                text=f"\u25b8 {movie['title']} | {movie['code']}",
+                text=f" {movie['title']} | {movie['code']}",
                 callback_data=f"get_movie:{movie['code']}",
+                icon_custom_emoji_id=ID_CLAPPER,
+                style="primary"
             )
         )
 
@@ -93,15 +115,19 @@ def get_search_results_kb(
     if page > 0:
         nav_buttons.append(
             InlineKeyboardButton(
-                text="\u25c2 Oldingi",
+                text=" Oldingi",
                 callback_data=f"search_page:{page - 1}",
+                icon_custom_emoji_id=ID_BACK,
+                style="primary"
             )
         )
     if end < len(movies):
         nav_buttons.append(
             InlineKeyboardButton(
-                text="Keyingi \u25b8",
+                text=" Keyingi",
                 callback_data=f"search_page:{page + 1}",
+                icon_custom_emoji_id=ID_FORWARD,
+                style="primary"
             )
         )
     if nav_buttons:
@@ -109,8 +135,10 @@ def get_search_results_kb(
 
     builder.row(
         InlineKeyboardButton(
-            text="\u25c6 Bosh menyu",
+            text=" Bosh menyu",
             callback_data="main_menu",
+            icon_custom_emoji_id=ID_HOME,
+            style="secondary"
         )
     )
     return builder.as_markup()
@@ -123,14 +151,18 @@ def get_popular_movies_kb(movies: list) -> InlineKeyboardMarkup:
         views = movie["views"]
         builder.row(
             InlineKeyboardButton(
-                text=f"{i}. {movie['title']}  \u2014  {views} ko'rish",
+                text=f" {i}. {movie['title']}  —  {views} ko'rish",
                 callback_data=f"get_movie:{movie['code']}",
+                icon_custom_emoji_id=ID_CLAPPER,
+                style="success"
             )
         )
     builder.row(
         InlineKeyboardButton(
-            text="\u25c6 Bosh menyu",
+            text=" Bosh menyu",
             callback_data="main_menu",
+            icon_custom_emoji_id=ID_HOME,
+            style="secondary"
         )
     )
     return builder.as_markup()
@@ -142,14 +174,18 @@ def get_recent_movies_kb(movies: list) -> InlineKeyboardMarkup:
     for movie in movies:
         builder.row(
             InlineKeyboardButton(
-                text=f"\u25b8 {movie['title']} | {movie['code']}",
+                text=f" {movie['title']} | {movie['code']}",
                 callback_data=f"get_movie:{movie['code']}",
+                icon_custom_emoji_id=ID_CLAPPER,
+                style="success"
             )
         )
     builder.row(
         InlineKeyboardButton(
-            text="\u25c6 Bosh menyu",
+            text=" Bosh menyu",
             callback_data="main_menu",
+            icon_custom_emoji_id=ID_HOME,
+            style="secondary"
         )
     )
     return builder.as_markup()
@@ -161,8 +197,10 @@ def get_back_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u25c2 Orqaga",
+                    text=" Orqaga",
                     callback_data="main_menu",
+                    icon_custom_emoji_id=ID_BACK,
+                    style="danger"
                 )
             ]
         ]
@@ -179,38 +217,52 @@ def get_admin_panel_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="\u002b Kino qo'shish",
+            text=" Kino qo'shish",
             callback_data="admin:add_movie",
+            icon_custom_emoji_id=ID_ADD,
+            style="success"
         ),
         InlineKeyboardButton(
-            text="\u00d7 Kino o'chirish",
+            text=" Kino o'chirish",
             callback_data="admin:delete_movie",
+            icon_custom_emoji_id=ID_DELETE,
+            style="danger"
         ),
     )
     builder.row(
         InlineKeyboardButton(
-            text="\u25a3 Kinolar ro'yxati",
+            text=" Kinolar ro'yxati",
             callback_data="admin:movie_list",
+            icon_custom_emoji_id=ID_FOLDER,
+            style="primary"
         ),
         InlineKeyboardButton(
-            text="\u2261 Statistika",
+            text=" Statistika",
             callback_data="admin:statistics",
+            icon_custom_emoji_id=ID_CHART,
+            style="primary"
         ),
     )
     builder.row(
         InlineKeyboardButton(
-            text="\u00bb Xabar yuborish",
+            text=" Xabar yuborish",
             callback_data="admin:broadcast",
+            icon_custom_emoji_id=ID_MEGAPHONE,
+            style="primary"
         ),
         InlineKeyboardButton(
-            text="\u229a Kanallar",
+            text=" Kanallar",
             callback_data="admin:channels",
+            icon_custom_emoji_id=ID_CHANNEL,
+            style="primary"
         ),
     )
     builder.row(
         InlineKeyboardButton(
-            text="\u25c6 Bosh menyu",
+            text=" Bosh menyu",
             callback_data="main_menu",
+            icon_custom_emoji_id=ID_HOME,
+            style="secondary"
         )
     )
     return builder.as_markup()
@@ -222,12 +274,16 @@ def get_admin_confirm_kb(action: str) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u2713 Tasdiqlash",
+                    text=" Tasdiqlash",
                     callback_data=f"confirm:{action}",
+                    icon_custom_emoji_id=ID_CHECK,
+                    style="success"
                 ),
                 InlineKeyboardButton(
-                    text="\u2717 Bekor qilish",
+                    text=" Bekor qilish",
                     callback_data="admin:cancel",
+                    icon_custom_emoji_id=ID_CROSS,
+                    style="danger"
                 ),
             ]
         ]
@@ -240,14 +296,18 @@ def get_skip_caption_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u25b8 O'tkazib yuborish",
+                    text=" O'tkazib yuborish",
                     callback_data="skip_caption",
+                    icon_custom_emoji_id=ID_FORWARD,
+                    style="primary"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="\u2717 Bekor qilish",
+                    text=" Bekor qilish",
                     callback_data="admin:cancel",
+                    icon_custom_emoji_id=ID_CROSS,
+                    style="danger"
                 )
             ],
         ]
@@ -260,12 +320,16 @@ def get_admin_back_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u25c2 Admin panel",
+                    text=" Admin panel",
                     callback_data="admin:panel",
+                    icon_custom_emoji_id=ID_BACK,
+                    style="primary"
                 ),
                 InlineKeyboardButton(
-                    text="\u2717 Bekor qilish",
+                    text=" Bekor qilish",
                     callback_data="admin:cancel",
+                    icon_custom_emoji_id=ID_CROSS,
+                    style="danger"
                 ),
             ]
         ]
@@ -280,20 +344,26 @@ def get_channel_management_kb(channels: list) -> InlineKeyboardMarkup:
         title = ch["channel_title"] or username
         builder.row(
             InlineKeyboardButton(
-                text=f"\u2717 {title}",
+                text=f" {title}",
                 callback_data=f"remove_channel:{ch['channel_id']}",
+                icon_custom_emoji_id=ID_DELETE,
+                style="danger"
             )
         )
     builder.row(
         InlineKeyboardButton(
-            text="\u002b Kanal qo'shish",
+            text=" Kanal qo'shish",
             callback_data="admin:add_channel",
+            icon_custom_emoji_id=ID_ADD,
+            style="success"
         )
     )
     builder.row(
         InlineKeyboardButton(
-            text="\u25c2 Admin panel",
+            text=" Admin panel",
             callback_data="admin:panel",
+            icon_custom_emoji_id=ID_BACK,
+            style="primary"
         )
     )
     return builder.as_markup()
@@ -314,6 +384,8 @@ def get_movie_list_kb(
             InlineKeyboardButton(
                 text=f"[{movie['code']}] {movie['title']}  ({views})",
                 callback_data=f"admin:view_movie:{movie['code']}",
+                icon_custom_emoji_id=ID_CLAPPER,
+                style="primary"
             )
         )
 
@@ -321,15 +393,19 @@ def get_movie_list_kb(
     if page > 0:
         nav_buttons.append(
             InlineKeyboardButton(
-                text="\u25c2 Oldingi",
+                text=" Oldingi",
                 callback_data=f"admin:movie_page:{page - 1}",
+                icon_custom_emoji_id=ID_BACK,
+                style="primary"
             )
         )
     if end < len(movies):
         nav_buttons.append(
             InlineKeyboardButton(
-                text="Keyingi \u25b8",
+                text=" Keyingi",
                 callback_data=f"admin:movie_page:{page + 1}",
+                icon_custom_emoji_id=ID_FORWARD,
+                style="primary"
             )
         )
     if nav_buttons:
@@ -337,8 +413,10 @@ def get_movie_list_kb(
 
     builder.row(
         InlineKeyboardButton(
-            text="\u25c2 Admin panel",
+            text=" Admin panel",
             callback_data="admin:panel",
+            icon_custom_emoji_id=ID_BACK,
+            style="secondary"
         )
     )
     return builder.as_markup()
@@ -350,14 +428,18 @@ def get_admin_movie_detail_kb(code: str) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u00d7 O'chirish",
+                    text=" O'chirish",
                     callback_data=f"admin:confirm_delete:{code}",
+                    icon_custom_emoji_id=ID_DELETE,
+                    style="danger"
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="\u25c2 Ro'yxatga qaytish",
+                    text=" Ro'yxatga qaytish",
                     callback_data="admin:movie_list",
+                    icon_custom_emoji_id=ID_BACK,
+                    style="primary"
                 )
             ],
         ]
@@ -370,12 +452,16 @@ def get_confirm_delete_kb(code: str) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="\u2713 Ha, o'chirish",
+                    text=" Ha, o'chirish",
                     callback_data=f"admin:do_delete:{code}",
+                    icon_custom_emoji_id=ID_CHECK,
+                    style="danger"
                 ),
                 InlineKeyboardButton(
-                    text="\u2717 Yo'q, bekor qilish",
+                    text=" Yo'q, bekor qilish",
                     callback_data="admin:movie_list",
+                    icon_custom_emoji_id=ID_CROSS,
+                    style="secondary"
                 ),
             ]
         ]

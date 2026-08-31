@@ -5,6 +5,9 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
 )
+from utils.premium_emoji import (
+    ID_SEARCH, ID_FIRE, ID_SPARKLE, ID_INFO, ID_CROWN, ID_CROSS
+)
 
 
 def get_main_menu_kb() -> ReplyKeyboardMarkup:
@@ -12,12 +15,28 @@ def get_main_menu_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="\u25c8 Kino qidirish"),
-                KeyboardButton(text="\u2606 Mashhur kinolar"),
+                KeyboardButton(
+                    text=" Kino qidirish",
+                    icon_custom_emoji_id=ID_SEARCH,
+                    style="primary"
+                ),
+                KeyboardButton(
+                    text=" Mashhur kinolar",
+                    icon_custom_emoji_id=ID_FIRE,
+                    style="success"
+                ),
             ],
             [
-                KeyboardButton(text="\u2737 Yangi kinolar"),
-                KeyboardButton(text="\u25c7 Biz haqimizda"),
+                KeyboardButton(
+                    text=" Yangi kinolar",
+                    icon_custom_emoji_id=ID_SPARKLE,
+                    style="success"
+                ),
+                KeyboardButton(
+                    text=" Biz haqimizda",
+                    icon_custom_emoji_id=ID_INFO,
+                    style="primary"
+                ),
             ],
         ],
         resize_keyboard=True,
@@ -30,15 +49,35 @@ def get_admin_menu_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="\u2726 Admin panel"),
+                KeyboardButton(
+                    text=" Admin panel",
+                    icon_custom_emoji_id=ID_CROWN,
+                    style="secondary"
+                ),
             ],
             [
-                KeyboardButton(text="\u25c8 Kino qidirish"),
-                KeyboardButton(text="\u2606 Mashhur kinolar"),
+                KeyboardButton(
+                    text=" Kino qidirish",
+                    icon_custom_emoji_id=ID_SEARCH,
+                    style="primary"
+                ),
+                KeyboardButton(
+                    text=" Mashhur kinolar",
+                    icon_custom_emoji_id=ID_FIRE,
+                    style="success"
+                ),
             ],
             [
-                KeyboardButton(text="\u2737 Yangi kinolar"),
-                KeyboardButton(text="\u25c7 Biz haqimizda"),
+                KeyboardButton(
+                    text=" Yangi kinolar",
+                    icon_custom_emoji_id=ID_SPARKLE,
+                    style="success"
+                ),
+                KeyboardButton(
+                    text=" Biz haqimizda",
+                    icon_custom_emoji_id=ID_INFO,
+                    style="primary"
+                ),
             ],
         ],
         resize_keyboard=True,
@@ -50,7 +89,13 @@ def get_cancel_kb() -> ReplyKeyboardMarkup:
     """Bekor qilish tugmasi."""
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="\u2717 Bekor qilish")],
+            [
+                KeyboardButton(
+                    text=" Bekor qilish",
+                    icon_custom_emoji_id=ID_CROSS,
+                    style="danger"
+                )
+            ],
         ],
         resize_keyboard=True,
     )

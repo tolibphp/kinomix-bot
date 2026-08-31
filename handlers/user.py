@@ -217,7 +217,7 @@ async def reply_about(message: Message, state: FSMContext) -> None:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-@router.message(F.text == "\u2717 Bekor qilish")
+@router.message(F.text.contains("Bekor qilish"))
 async def cancel_search(message: Message, state: FSMContext) -> None:
     await state.clear()
     kb = (

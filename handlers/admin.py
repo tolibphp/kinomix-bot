@@ -86,7 +86,7 @@ async def cmd_admin(message: Message, state: FSMContext) -> None:
     await _show_admin_panel(message)
 
 
-@router.message(F.text.endswith("Admin panel"))
+@router.message(F.text.contains("Admin panel"))
 async def reply_admin_panel(message: Message, state: FSMContext) -> None:
     if not _is_admin(message.from_user.id):
         return
@@ -194,7 +194,7 @@ async def process_movie_code(
         return
 
     # Bekor qilish
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
@@ -242,7 +242,7 @@ async def process_movie_title(
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
