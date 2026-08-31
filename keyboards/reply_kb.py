@@ -30,7 +30,7 @@ def get_main_menu_kb() -> ReplyKeyboardMarkup:
                 KeyboardButton(
                     text=" Yangi kinolar",
                     icon_custom_emoji_id=ID_SPARKLE,
-                    style="success"
+                    style="primary"
                 ),
                 KeyboardButton(
                     text=" Biz haqimizda",
@@ -71,7 +71,7 @@ def get_admin_menu_kb() -> ReplyKeyboardMarkup:
                 KeyboardButton(
                     text=" Yangi kinolar",
                     icon_custom_emoji_id=ID_SPARKLE,
-                    style="success"
+                    style="primary"
                 ),
                 KeyboardButton(
                     text=" Biz haqimizda",
