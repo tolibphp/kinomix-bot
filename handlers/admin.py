@@ -1139,18 +1139,46 @@ async def process_add_channel(
         await _show_admin_panel(message)
         return
 
-    if not message.forward_from_chat:
+    chat = None
+    if message.forward_origin:
+        if message.forward_origin.type == "channel":
+            chat = message.forward_origin.chat
+        elif message.forward_origin.type == "chat":
+            chat = message.forward_origin.sender_chat
+    
+    if not chat and message.forward_from_chat:
+        chat = message.forward_from_chat
+
+    channel_id = None
+    channel_username = None
+    channel_title = "Kanal"
+
+    if chat:
+        channel_id = chat.id
+        channel_username = chat.username
+        channel_title = chat.title or "Kanal"
+    elif message.text and (message.text.startswith("-100") or message.text.startswith("@")):
+        try:
+            # Fallback: manually typed ID or username
+            chat = await bot.get_chat(message.text.strip())
+            channel_id = chat.id
+            channel_username = chat.username
+            channel_title = chat.title or "Kanal"
+        except Exception:
+            text = (
+                f"{PE_CROSS} <b>Kanal topilmadi</b>\n\n"
+                f"{PE_INFO} Bot kanalda admin emas yoki ID/Username xato."
+            )
+            await message.answer(text, parse_mode="HTML")
+            return
+    else:
         text = (
             f"{PE_CROSS} <b>Noto'g'ri format</b>\n\n"
-            f"{PE_INFO} Iltimos, kanaldagi xabarni forward qiling."
+            f"{PE_INFO} Iltimos, kanaldagi xabarni forward qiling yoki kanal ID sini (-100...) yuboring.\n"
+            f"<i>Maxfiy kanallar ID sini bilish uchun xabarni @userinfobot ga forward qiling.</i>"
         )
         await message.answer(text, parse_mode="HTML")
         return
-
-    chat = message.forward_from_chat
-    channel_id = chat.id
-    channel_username = chat.username
-    channel_title = chat.title
 
     # Bot kanalda admin ekanligini tekshirish
     try:
@@ -1160,14 +1188,15 @@ async def process_add_channel(
         if bot_member.status not in ("administrator", "creator"):
             text = (
                 f"{PE_CROSS} <b>Bot kanalda admin emas</b>\n\n"
-                f"{PE_INFO} Avval botni kanalga admin qilib qo'shing."
+                f"{PE_INFO} Avval botni <b>{channel_title}</b> kanaliga admin qilib qo'shing."
             )
             await message.answer(text, parse_mode="HTML")
             return
-    except Exception:
+    except Exception as e:
         text = (
             f"{PE_WARNING} <b>Kanalni tekshirib bo'lmadi</b>\n\n"
-            f"{PE_INFO} Bot kanalda admin ekanligiga ishonch hosil qiling."
+            f"{PE_INFO} Bot kanalda admin emas yoki kanal topilmadi.\n"
+            f"<i>Xatolik: {e}</i>"
         )
         await message.answer(text, parse_mode="HTML")
         return
@@ -1181,10 +1210,11 @@ async def process_add_channel(
                 creates_join_request=True
             )
             invite_link = link_obj.invite_link
-        except Exception:
+        except Exception as e:
             text = (
                 f"{PE_CROSS} <b>Maxfiy kanal uchun link yaratib bo'lmadi</b>\n\n"
-                f"{PE_INFO} Botga 'Foydalanuvchilarni qo'shish' huquqini bering."
+                f"{PE_INFO} Botga 'Foydalanuvchilarni qo'shish' huquqini bering.\n"
+                f"<i>Xatolik: {e}</i>"
             )
             await message.answer(text, parse_mode="HTML")
             return
