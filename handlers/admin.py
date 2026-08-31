@@ -80,6 +80,16 @@ def _is_admin(user_id: int) -> bool:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+from aiogram.filters import CommandStart, StateFilter
+
+@router.message(CommandStart(), StateFilter("*"))
+async def admin_cmd_start(message: Message, db: Database, state: FSMContext) -> None:
+    """FSM holatidan qat'i nazar /start buyrug'ini ushlab olish."""
+    await state.clear()
+    from handlers.user import cmd_start
+    await cmd_start(message, db, state)
+
+
 @router.message(Command("admin"))
 async def cmd_admin(message: Message, state: FSMContext) -> None:
     if not _is_admin(message.from_user.id):
@@ -452,7 +462,7 @@ async def process_movie_file_invalid(message: Message) -> None:
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         return  # cancel handler handles this
 
     text = (
@@ -481,7 +491,7 @@ async def process_movie_caption(
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
@@ -625,7 +635,7 @@ async def process_delete_code(
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
@@ -874,7 +884,7 @@ async def process_broadcast_message(
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
@@ -1017,7 +1027,7 @@ async def process_add_channel(
     if not _is_admin(message.from_user.id):
         return
 
-    if message.text and message.text.strip() == "\u2717 Bekor qilish":
+    if message.text and "Bekor qilish" in message.text:
         await state.clear()
         await message.answer(
             f"{PE_CHECK} <b>Bekor qilindi</b>",
