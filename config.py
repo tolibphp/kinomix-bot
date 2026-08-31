@@ -16,8 +16,12 @@ ADMIN_IDS: list[int] = [
 ]
 
 
-# Agar Railway Volume (/app/data) mavjud bo'lsa, to'g'ridan-to'g'ri o'sha yerdan foydalanamiz
-if os.path.exists('/app/data'):
+# Railway Volume yo'llarini avtomatik qidirish
+if os.getenv('DB_PATH'):
+    DB_PATH = Path(os.getenv('DB_PATH'))
+elif os.path.exists('/data'):
+    DB_PATH = Path('/data/kino_bot.db')
+elif os.path.exists('/app/data'):
     DB_PATH = Path('/app/data/kino_bot.db')
 else:
-    DB_PATH = BASE_DIR / os.getenv('DB_PATH', 'database/kino_bot.db')
+    DB_PATH = BASE_DIR / 'database' / 'kino_bot.db'
