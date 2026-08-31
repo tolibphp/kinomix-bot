@@ -286,6 +286,28 @@ async def process_movie_title(
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BAZANI ZAXIRALASH (BACKUP)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+from aiogram.types import FSInputFile
+
+@router.callback_query(F.data == "admin:backup")
+async def cb_admin_backup(callback: CallbackQuery) -> None:
+    if not _is_admin(callback.from_user.id):
+        return
+    import os
+    db_path = "database/kino_bot.db"
+    if os.path.exists(db_path):
+        document = FSInputFile(db_path)
+        await callback.message.answer_document(
+            document,
+            caption=f"{PE_CHECK} <b>Baza muvaffaqiyatli yuklab olindi!</b>",
+            parse_mode="HTML"
+        )
+    else:
+        await callback.answer("Baza fayli topilmadi!", show_alert=True)
+    await callback.answer()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  KANALGA POST YUBORISH
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -353,7 +375,7 @@ async def post_media_received(message: Message, state: FSMContext) -> None:
 
 @router.message(ChannelPostStates.waiting_for_caption, F.text)
 async def post_caption_received(message: Message, state: FSMContext, bot: Bot) -> None:
-    caption = message.text
+    caption = message.html_text
     data = await state.get_data()
     channel_id = data["post_channel_id"]
     code = data["post_code"]
@@ -501,7 +523,7 @@ async def process_movie_caption(
         await _show_admin_panel(message)
         return
 
-    caption = message.text.strip() if message.text else None
+    caption = message.html_text.strip() if message.text else None
     await _save_movie_from_message(message, db, state, caption)
 
 

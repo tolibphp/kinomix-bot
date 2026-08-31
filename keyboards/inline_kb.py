@@ -264,6 +264,12 @@ def get_admin_panel_kb() -> InlineKeyboardMarkup:
             icon_custom_emoji_id=ID_CHANNEL,
             style="primary"
         ),
+        InlineKeyboardButton(
+            text=" Backup",
+            callback_data="admin:backup",
+            icon_custom_emoji_id=ID_FOLDER,
+            style="primary"
+        )
     )
     builder.row(
         InlineKeyboardButton(
