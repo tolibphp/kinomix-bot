@@ -56,7 +56,8 @@ class SubscriptionMiddleware(BaseMiddleware):
         bot: Bot = data["bot"]
         not_subscribed: list[dict] = []
 
-        for ch in channels:
+        for row in channels:
+            ch = dict(row) if hasattr(row, "keys") else row
             try:
                 member = await bot.get_chat_member(
                     chat_id=ch["channel_id"], user_id=user.id

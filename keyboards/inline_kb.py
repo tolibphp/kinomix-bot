@@ -22,7 +22,8 @@ def get_subscription_kb(
 ) -> InlineKeyboardMarkup:
     """Majburiy obuna kanallar klaviaturasi."""
     builder = InlineKeyboardBuilder()
-    for ch in channels:
+    for row in channels:
+        ch = dict(row) if hasattr(row, "keys") else row
         username = ch.get("channel_username")
         title = ch.get("channel_title") or username or "Kanal"
         invite_link = ch.get("invite_link")
