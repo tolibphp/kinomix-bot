@@ -29,6 +29,7 @@ from states.states import (
     AddMovieStates,
     BroadcastStates,
     DeleteMovieStates,
+    ChannelPostStates,
 )
 from utils.premium_emoji import (
     PE_ADD,
