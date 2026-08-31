@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from utils.premium_emoji import (
     ID_FORWARD, ID_CHECK, ID_SEARCH, ID_FIRE, ID_SPARKLE, 
     ID_CLAPPER, ID_BACK, ID_HOME, ID_ADD, ID_DELETE, 
-    ID_FOLDER, ID_CHART, ID_MEGAPHONE, ID_CHANNEL, ID_CROSS
+    ID_FOLDER, ID_CHART, ID_MEGAPHONE, ID_CHANNEL, ID_CROSS, ID_SEND
 )
 
 
