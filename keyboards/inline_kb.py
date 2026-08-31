@@ -58,7 +58,7 @@ def get_main_inline_kb() -> InlineKeyboardMarkup:
             text=" Mashhurlar",
             callback_data="popular_movies",
             icon_custom_emoji_id=ID_FIRE,
-            style="success"
+            style="primary"
         ),
     )
     builder.row(
@@ -66,7 +66,7 @@ def get_main_inline_kb() -> InlineKeyboardMarkup:
             text=" Yangi kinolar",
             callback_data="recent_movies",
             icon_custom_emoji_id=ID_SPARKLE,
-            style="success"
+            style="primary"
         ),
     )
     return builder.as_markup()
@@ -86,7 +86,7 @@ def get_movie_kb(code: str) -> InlineKeyboardMarkup:
             text=" Mashhurlar",
             callback_data="popular_movies",
             icon_custom_emoji_id=ID_FIRE,
-            style="success"
+            style="primary"
         ),
     )
     return builder.as_markup()
@@ -154,7 +154,7 @@ def get_popular_movies_kb(movies: list) -> InlineKeyboardMarkup:
                 text=f" {i}. {movie['title']}  —  {views} ko'rish",
                 callback_data=f"get_movie:{movie['code']}",
                 icon_custom_emoji_id=ID_CLAPPER,
-                style="success"
+                style="primary"
             )
         )
     builder.row(
@@ -177,7 +177,7 @@ def get_recent_movies_kb(movies: list) -> InlineKeyboardMarkup:
                 text=f" {movie['title']} | {movie['code']}",
                 callback_data=f"get_movie:{movie['code']}",
                 icon_custom_emoji_id=ID_CLAPPER,
-                style="success"
+                style="primary"
             )
         )
     builder.row(
