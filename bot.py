@@ -87,8 +87,14 @@ async def main() -> None:
     dp["db"] = db
 
     # Lifecycle
-    dp.startup.register(lambda: on_startup(bot, db))
-    dp.shutdown.register(lambda: on_shutdown(db))
+    async def _on_startup() -> None:
+        await on_startup(bot, db)
+
+    async def _on_shutdown() -> None:
+        await on_shutdown(db)
+
+    dp.startup.register(_on_startup)
+    dp.shutdown.register(_on_shutdown)
 
     # Polling
     logger.info("Polling boshlandi...")
