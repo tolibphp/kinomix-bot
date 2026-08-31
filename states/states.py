@@ -45,10 +45,3 @@ class SearchStates(StatesGroup):
     """Kino qidirish holati."""
 
     waiting_for_query = State()
-
-
-class ChannelPostStates(StatesGroup):
-    waiting_for_channel = State()
-    waiting_for_code = State()
-    waiting_for_media = State()
-    waiting_for_caption = State()

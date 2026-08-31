@@ -251,19 +251,13 @@ def get_admin_panel_kb() -> InlineKeyboardMarkup:
             style="primary"
         ),
         InlineKeyboardButton(
-            text=" Kanalga post",
-            callback_data="admin:channel_post",
-            icon_custom_emoji_id=ID_SEND,
-            style="success"
-        ),
-    )
-    builder.row(
-        InlineKeyboardButton(
             text=" Kanallar",
             callback_data="admin:channels",
             icon_custom_emoji_id=ID_CHANNEL,
             style="primary"
         ),
+    )
+    builder.row(
         InlineKeyboardButton(
             text=" Backup",
             callback_data="admin:backup",
@@ -460,29 +454,7 @@ def get_admin_movie_detail_kb(code: str) -> InlineKeyboardMarkup:
     )
 
 
-def get_post_channels_kb(channels: list) -> InlineKeyboardMarkup:
-    """Kanalga post yuborish uchun kanal tanlash."""
-    builder = InlineKeyboardBuilder()
-    for ch in channels:
-        username = ch["channel_username"] or str(ch["channel_id"])
-        title = ch["channel_title"] or username
-        builder.row(
-            InlineKeyboardButton(
-                text=f" {title}",
-                callback_data=f"post_channel:{ch['channel_id']}",
-                icon_custom_emoji_id=ID_CHANNEL,
-                style="primary"
-            )
-        )
-    builder.row(
-        InlineKeyboardButton(
-            text=" Bekor qilish",
-            callback_data="admin:cancel",
-            icon_custom_emoji_id=ID_CROSS,
-            style="danger"
-        )
-    )
-    return builder.as_markup()
+
 
 
 def get_confirm_delete_kb(code: str) -> InlineKeyboardMarkup:
