@@ -504,6 +504,52 @@ async def process_movie_caption(
     caption = message.html_text.strip() if message.text else None
     await _save_movie_from_message(message, db, state, caption)
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  KANALDAGI POSTLARGA AVTOMAT TUGMA QO'SHISH
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import re
+
+@router.channel_post()
+async def auto_add_button_to_channel_post(message: Message, bot: Bot) -> None:
+    """Kanalga yozilgan postda #kino_123 kabi kod bo'lsa avtomat tugma ulaydi."""
+    text = message.text or message.caption
+    if not text:
+        return
+    
+    # #kino_ kodi borligini tekshiramiz
+    match = re.search(r'#kino_(\d+)', text)
+    if match:
+        code = match.group(1)
+        
+        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+        from utils.premium_emoji import ID_SEARCH
+        
+        bot_info = await bot.get_me()
+        url = f"https://t.me/{bot_info.username}?start={code}"
+        
+        kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=" Kinoni ko'rish",
+                        url=url,
+                        icon_custom_emoji_id=ID_SEARCH,
+                        style="success"
+                    )
+                ]
+            ]
+        )
+        
+        try:
+            await bot.edit_message_reply_markup(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                reply_markup=kb
+            )
+        except Exception as e:
+            import logging
+            logging.error(f"Kanal postiga tugma qo'shishda xatolik: {e}")
+
 
 async def _save_movie(
     callback: CallbackQuery,
