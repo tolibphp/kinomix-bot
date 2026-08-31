@@ -20,6 +20,8 @@ from database.db import Database
 from handlers.admin import router as admin_router
 from handlers.user import router as user_router
 from middlewares.subscription import SubscriptionMiddleware
+from utils.scheduler import setup_scheduler
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  LOGGING
@@ -89,6 +91,9 @@ async def main() -> None:
     # Lifecycle
     async def _on_startup() -> None:
         await on_startup(bot, db)
+        # Schedulerni ishga tushirish
+        scheduler = setup_scheduler(bot)
+        dp['scheduler'] = scheduler
 
     async def _on_shutdown() -> None:
         await on_shutdown(db)
