@@ -273,6 +273,115 @@ async def process_movie_title(
     )
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  KANALGA POST YUBORISH
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@router.callback_query(F.data == "admin:channel_post")
+async def cb_admin_channel_post(callback: CallbackQuery, db: Database, state: FSMContext) -> None:
+    if not _is_admin(callback.from_user.id):
+        return
+    channels = await db.get_channels()
+    if not channels:
+        await callback.answer("Bazada kanallar yo'q! Oldin kanal qo'shing.", show_alert=True)
+        return
+    await state.set_state(ChannelPostStates.waiting_for_channel)
+    from keyboards.inline_kb import get_post_channels_kb
+    text = f"{PE_CHANNEL} <b>Qaysi kanalga post yuboramiz?</b>"
+    await callback.message.edit_text(text, reply_markup=get_post_channels_kb(channels), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.callback_query(ChannelPostStates.waiting_for_channel, F.data.startswith("post_channel:"))
+async def cb_post_channel_selected(callback: CallbackQuery, state: FSMContext) -> None:
+    channel_id = int(callback.data.split(":")[1])
+    await state.update_data(post_channel_id=channel_id)
+    await state.set_state(ChannelPostStates.waiting_for_code)
+    text = (
+        f"{PE_MOVIE} <b>Kino kodini yuboring</b>\n\n"
+        f"{PE_INFO} Bu kod postdagi tugmani bosganda ishlaydi."
+    )
+    from keyboards.inline_kb import get_admin_back_kb
+    await callback.message.edit_text(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.message(ChannelPostStates.waiting_for_code, F.text)
+async def post_code_received(message: Message, state: FSMContext) -> None:
+    code = message.text.strip()
+    await state.update_data(post_code=code)
+    await state.set_state(ChannelPostStates.waiting_for_media)
+    text = (
+        f"{PE_CLAPPER} <b>Kino uchun rasm yoki qisqa video yuboring</b>"
+    )
+    from keyboards.inline_kb import get_admin_back_kb
+    await message.answer(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
+
+
+@router.message(ChannelPostStates.waiting_for_media, F.photo | F.video | F.document)
+async def post_media_received(message: Message, state: FSMContext) -> None:
+    if message.photo:
+        file_id = message.photo[-1].file_id
+        file_type = "photo"
+    elif message.video:
+        file_id = message.video.file_id
+        file_type = "video"
+    else:
+        file_id = message.document.file_id
+        file_type = "document"
+
+    await state.update_data(post_media_id=file_id, post_media_type=file_type)
+    await state.set_state(ChannelPostStates.waiting_for_caption)
+    text = (
+        f"{PE_PIN} <b>Kino haqida qisqa ma'lumot (caption) yozing</b>"
+    )
+    from keyboards.inline_kb import get_admin_back_kb
+    await message.answer(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
+
+
+@router.message(ChannelPostStates.waiting_for_caption, F.text)
+async def post_caption_received(message: Message, state: FSMContext, bot: Bot) -> None:
+    caption = message.text
+    data = await state.get_data()
+    channel_id = data["post_channel_id"]
+    code = data["post_code"]
+    media_id = data["post_media_id"]
+    media_type = data["post_media_type"]
+    await state.clear()
+
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from utils.premium_emoji import ID_SEARCH
+    
+    bot_info = await bot.get_me()
+    url = f"https://t.me/{bot_info.username}?start={code}"
+    
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=" Kinoni ko'rish",
+                    url=url,
+                    icon_custom_emoji_id=ID_SEARCH,
+                    style="success"
+                )
+            ]
+        ]
+    )
+
+    try:
+        if media_type == "photo":
+            await bot.send_photo(chat_id=channel_id, photo=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
+        elif media_type == "video":
+            await bot.send_video(chat_id=channel_id, video=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
+        else:
+            await bot.send_document(chat_id=channel_id, document=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
+        
+        await message.answer(f"{PE_CHECK} <b>Post muvaffaqiyatli kanalga yuborildi!</b>", parse_mode="HTML")
+        await _show_admin_panel(message)
+    except Exception as e:
+        await message.answer(f"{PE_CROSS} Xatolik: {e}", parse_mode="HTML")
+
+
 @router.message(AddMovieStates.waiting_for_file, F.video)
 async def process_movie_file_video(
     message: Message, state: FSMContext

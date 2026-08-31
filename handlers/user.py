@@ -94,11 +94,10 @@ async def cmd_start(message: Message, db: Database, state: FSMContext) -> None:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-@router.message(F.text.regexp(r"^\d+$"))
-async def handle_movie_code(message: Message, db: Database, state: FSMContext) -> None:
-    current_state = await state.get_state()
-    if current_state is not None:
-        return  # FSM faol bo'lsa, bu handler ishlamasin
+from aiogram.filters import StateFilter
+
+@router.message(F.text.regexp(r"^\d+$"), StateFilter(None))
+async def handle_movie_code(message: Message, db: Database) -> None:
 
     code = message.text.strip()
     movie = await db.get_movie_by_code(code)
