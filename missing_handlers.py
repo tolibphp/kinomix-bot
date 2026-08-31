@@ -1,252 +1,3 @@
-"""Admin handlerlari."""
-
-from __future__ import annotations
-
-import asyncio
-import logging
-
-from aiogram import Bot, F, Router
-from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
-
-from config import ADMIN_IDS
-from database.db import Database
-from keyboards.inline_kb import (
-    get_admin_back_kb,
-    get_admin_confirm_kb,
-    get_admin_movie_detail_kb,
-    get_admin_panel_kb,
-    get_channel_management_kb,
-    get_confirm_delete_kb,
-    get_main_inline_kb,
-    get_movie_list_kb,
-    get_skip_caption_kb,
-)
-from keyboards.reply_kb import get_admin_menu_kb, get_cancel_kb
-from states.states import (
-    AddChannelStates,
-    AddMovieStates,
-    BroadcastStates,
-    DeleteMovieStates,
-)
-from utils.premium_emoji import (
-    PE_ADD,
-    PE_CHANNEL,
-    PE_CHART,
-    PE_CHECK,
-    PE_CLOCK,
-    PE_CLAPPER,
-    PE_CROSS,
-    PE_CROWN,
-    PE_DELETE,
-    PE_FIRE,
-    PE_FOLDER,
-    PE_GLOBE,
-    PE_HOME,
-    PE_INFO,
-    PE_KEY,
-    PE_MEGAPHONE,
-    PE_MOVIE,
-    PE_NUMBER,
-    PE_PIN,
-    PE_SEND,
-    PE_SPARKLE,
-    PE_STAR,
-    PE_USER,
-    PE_USERS,
-    PE_WARNING,
-    format_movie_caption,
-    format_number,
-)
-
-logger = logging.getLogger(__name__)
-
-router = Router(name="admin")
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  ADMIN FILTR
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-def _is_admin(user_id: int) -> bool:
-    return user_id in ADMIN_IDS
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  ADMIN PANEL
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-from aiogram.filters import CommandStart, StateFilter
-
-@router.message(CommandStart(), StateFilter("*"))
-async def admin_cmd_start(message: Message, db: Database, state: FSMContext) -> None:
-    """FSM holatidan qat'i nazar /start buyrug'ini ushlab olish."""
-    await state.clear()
-    from handlers.user import cmd_start
-    await cmd_start(message, db, state)
-
-
-@router.message(Command("admin"))
-async def cmd_admin(message: Message, state: FSMContext) -> None:
-    if not _is_admin(message.from_user.id):
-        return
-    await state.clear()
-    await _show_admin_panel(message)
-
-
-@router.message(F.text.contains("Admin panel"))
-async def reply_admin_panel(message: Message, state: FSMContext) -> None:
-    if not _is_admin(message.from_user.id):
-        return
-    await state.clear()
-    await _show_admin_panel(message)
-
-
-@router.callback_query(F.data == "admin:panel")
-async def cb_admin_panel(callback: CallbackQuery, state: FSMContext) -> None:
-    if not _is_admin(callback.from_user.id):
-        await callback.answer("Ruxsat yo'q", show_alert=True)
-        return
-    await state.clear()
-    text = (
-        f"{PE_CROWN} <b>Admin boshqaruv paneli</b>\n"
-        f"{'━' * 28}\n\n"
-        f"{PE_INFO} Kerakli bo'limni tanlang:"
-    )
-    await callback.message.edit_text(
-        text, reply_markup=get_admin_panel_kb(), parse_mode="HTML"
-    )
-    await callback.answer()
-
-
-async def _show_admin_panel(message: Message) -> None:
-    text = (
-        f"{PE_CROWN} <b>Admin boshqaruv paneli</b>\n"
-        f"{'━' * 28}\n\n"
-        f"{PE_INFO} Kerakli bo'limni tanlang:"
-    )
-    await message.answer(
-        text, reply_markup=get_admin_panel_kb(), parse_mode="HTML"
-    )
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  BEKOR QILISH (Admin FSM)
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-@router.callback_query(F.data == "admin:cancel")
-async def cb_admin_cancel(callback: CallbackQuery, state: FSMContext) -> None:
-    if not _is_admin(callback.from_user.id):
-        return
-    await state.clear()
-
-    text = f"{PE_CHECK} <b>Bekor qilindi</b>"
-    await callback.message.edit_text(text, parse_mode="HTML")
-
-    # Admin panelni qayta ko'rsatish
-    panel_text = (
-        f"{PE_CROWN} <b>Admin boshqaruv paneli</b>\n"
-        f"{'━' * 28}\n\n"
-        f"{PE_INFO} Kerakli bo'limni tanlang:"
-    )
-    await callback.message.answer(
-        panel_text, reply_markup=get_admin_panel_kb(), parse_mode="HTML"
-    )
-    # Reply keyboard'ni qaytarish
-    await callback.message.answer(
-        f"{PE_HOME} <b>Menyu yangilandi</b>",
-        reply_markup=get_admin_menu_kb(),
-        parse_mode="HTML",
-    )
-    await callback.answer()
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  KINO QO'SHISH
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-@router.callback_query(F.data == "admin:add_movie")
-async def cb_add_movie_start(
-    callback: CallbackQuery, state: FSMContext
-) -> None:
-    if not _is_admin(callback.from_user.id):
-        await callback.answer("Ruxsat yo'q", show_alert=True)
-        return
-
-    await state.set_state(AddMovieStates.waiting_for_code)
-    text = (
-        f"{PE_ADD} <b>Yangi kino qo'shish</b>\n"
-        f"{'━' * 28}\n\n"
-        f"{PE_NUMBER} <b>1-qadam:</b> Kino kodini yuboring\n\n"
-        f"{PE_INFO} <i>Masalan:</i> <code>1234</code>"
-    )
-    await callback.message.edit_text(
-        text, reply_markup=get_admin_back_kb(), parse_mode="HTML"
-    )
-    # Cancel reply keyboard
-    await callback.message.answer(
-        f"{PE_KEY} Kino kodini yuboring:",
-        reply_markup=get_cancel_kb(),
-        parse_mode="HTML",
-    )
-    await callback.answer()
-
-
-@router.message(AddMovieStates.waiting_for_code)
-async def process_movie_code(
-    message: Message, db: Database, state: FSMContext
-) -> None:
-    if not _is_admin(message.from_user.id):
-        return
-
-    # Bekor qilish
-    if message.text and "Bekor qilish" in message.text:
-        await state.clear()
-        await message.answer(
-            f"{PE_CHECK} <b>Bekor qilindi</b>",
-            reply_markup=get_admin_menu_kb(),
-            parse_mode="HTML",
-        )
-        await _show_admin_panel(message)
-        return
-
-    code = message.text.strip() if message.text else ""
-    if not code:
-        await message.answer(
-            f"{PE_CROSS} Iltimos, kino kodini matn ko'rinishida yuboring.",
-            parse_mode="HTML",
-        )
-        return
-
-    # Tekshirish: bu kod allaqachon mavjudmi
-    existing = await db.get_movie_by_code(code)
-    if existing:
-        text = (
-            f"{PE_WARNING} <b>Bu kod band!</b>\n\n"
-            f"{PE_INFO} <code>{code}</code> kodli kino allaqachon mavjud:\n"
-            f"{PE_MOVIE} {existing['title']}\n\n"
-            f"{PE_SPARKLE} Boshqa kod yuboring."
-        )
-        await message.answer(text, parse_mode="HTML")
-        return
-
-    await state.update_data(code=code)
-    await state.set_state(AddMovieStates.waiting_for_title)
-
-    text = (
-        f"{PE_CHECK} Kod: <code>{code}</code>\n\n"
-        f"{PE_CLAPPER} <b>2-qadam:</b> Kino nomini yuboring\n\n"
-        f"{PE_INFO} <i>Masalan:</i> <code>Matrix 1999</code>"
-    )
-    await message.answer(text, parse_mode="HTML")
-
-
-@router.message(AddMovieStates.waiting_for_title)
 async def process_movie_title(
     message: Message, state: FSMContext
 ) -> None:
@@ -282,6 +33,115 @@ async def process_movie_title(
     await message.answer(
         text, reply_markup=get_admin_back_kb(), parse_mode="HTML"
     )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  BAZANI ZAXIRALASH (BACKUP)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+from aiogram.types import FSInputFile
+
+@router.callback_query(F.data == "admin:backup")
+async def cb_admin_backup(callback: CallbackQuery) -> None:
+    if not _is_admin(callback.from_user.id):
+        return
+    import os
+    db_path = "database/kino_bot.db"
+    if os.path.exists(db_path):
+        document = FSInputFile(db_path)
+        await callback.message.answer_document(
+            document,
+            caption=f"{PE_CHECK} <b>Baza muvaffaqiyatli yuklab olindi!</b>",
+            parse_mode="HTML"
+        )
+    else:
+        await callback.answer("Baza fayli topilmadi!", show_alert=True)
+    await callback.answer()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  KANALGA POST YUBORISH
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@router.callback_query(F.data == "admin:channel_post")
+async def cb_admin_channel_post(callback: CallbackQuery, db: Database, state: FSMContext) -> None:
+    if not _is_admin(callback.from_user.id):
+        return
+    channels = await db.get_channels()
+    if not channels:
+        await callback.answer("Bazada kanallar yo'q! Oldin kanal qo'shing.", show_alert=True)
+        return
+    await state.set_state(ChannelPostStates.waiting_for_channel)
+    from keyboards.inline_kb import get_post_channels_kb
+    text = f"{PE_CHANNEL} <b>Qaysi kanalga post yuboramiz?</b>"
+    await callback.message.edit_text(text, reply_markup=get_post_channels_kb(channels), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.callback_query(ChannelPostStates.waiting_for_channel, F.data.startswith("post_channel:"))
+async def cb_post_channel_selected(callback: CallbackQuery, state: FSMContext) -> None:
+    channel_id = int(callback.data.split(":")[1])
+    await state.update_data(post_channel_id=channel_id)
+    await state.set_state(ChannelPostStates.waiting_for_code)
+    text = (
+        f"{PE_MOVIE} <b>Kino kodini yuboring</b>\n\n"
+        f"{PE_INFO} Bu kod postdagi tugmani bosganda ishlaydi."
+    )
+    from keyboards.inline_kb import get_admin_back_kb
+    await callback.message.edit_text(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.message(ChannelPostStates.waiting_for_code, ~F.text.startswith('/'))
+async def post_code_received(message: Message, state: FSMContext) -> None:
+    code = message.text.strip()
+    await state.update_data(post_code=code)
+    await state.set_state(ChannelPostStates.waiting_for_media)
+    text = (
+        f"{PE_CLAPPER} <b>Kino postini (rasm/video va matn) birga yuboring!</b>\n\n"
+        f"{PE_INFO} Shunda matndagi <b>Premium emojilar</b> huddi o'zidek kanalga chiqadi.\n"
+        f"Matnsiz faqat rasm yuborsangiz ham bo'ladi."
+    )
+    from keyboards.inline_kb import get_admin_back_kb
+    await message.answer(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
+
+
+@router.message(ChannelPostStates.waiting_for_media, ~F.text.startswith('/'))
+async def post_media_received(message: Message, state: FSMContext, bot: Bot) -> None:
+    data = await state.get_data()
+    channel_id = data["post_channel_id"]
+    code = data["post_code"]
+    await state.clear()
+
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    from utils.premium_emoji import ID_SEARCH
+    
+    bot_info = await bot.get_me()
+    url = f"https://t.me/{bot_info.username}?start={code}"
+    
+    kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=" Kinoni ko'rish",
+                    url=url,
+                    icon_custom_emoji_id=ID_SEARCH,
+                    style="success"
+                )
+            ]
+        ]
+    )
+
+    try:
+        await bot.copy_message(
+            chat_id=channel_id,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id,
+            reply_markup=kb
+        )
+        
+        await message.answer(f"{PE_CHECK} <b>Post muvaffaqiyatli kanalga yuborildi!</b>", parse_mode="HTML")
+        await _show_admin_panel(message)
+    except Exception as e:
+        await message.answer(f"{PE_CROSS} Xatolik: {e}", parse_mode="HTML")
 
 
 @router.message(AddMovieStates.waiting_for_file, F.video)
@@ -393,181 +253,6 @@ async def process_movie_caption(
 
     caption = message.html_text.strip() if message.text else None
     await _save_movie_from_message(message, db, state, caption)
-
-
-async def _save_movie(
-    callback: CallbackQuery,
-    db: Database,
-    state: FSMContext,
-    caption: str | None,
-) -> None:
-    data = await state.get_data()
-    code = data["code"]
-    title = data["title"]
-    file_id = data["file_id"]
-    file_type = data["file_type"]
-
-    success = await db.add_movie(
-        code=code,
-        title=title,
-        file_id=file_id,
-        file_type=file_type,
-        caption=caption,
-        added_by=callback.from_user.id,
-    )
-    await state.clear()
-
-    if success:
-        text = (
-            f"{PE_CHECK} <b>Kino muvaffaqiyatli qo'shildi!</b>\n"
-            f"{'━' * 28}\n\n"
-            f"{PE_MOVIE} <b>{title}</b>\n"
-            f"{PE_NUMBER} Kod: <code>{code}</code>\n"
-            f"{PE_STAR} Turi: {file_type}\n"
-        )
-        if caption:
-            text += f"{PE_INFO} Caption: {caption}\n"
-    else:
-        text = (
-            f"{PE_CROSS} <b>Xatolik!</b>\n\n"
-            f"{PE_WARNING} Kino qo'shishda muammo yuz berdi.\n"
-            f"Bu kod allaqachon mavjud bo'lishi mumkin."
-        )
-
-    await callback.message.edit_text(text, parse_mode="HTML")
-    await callback.message.answer(
-        f"{PE_HOME} <b>Menyu</b>",
-        reply_markup=get_admin_menu_kb(),
-        parse_mode="HTML",
-    )
-    await _show_admin_panel(callback.message)
-    await callback.answer()
-
-
-async def _save_movie_from_message(
-    message: Message,
-    db: Database,
-    state: FSMContext,
-    caption: str | None,
-) -> None:
-    data = await state.get_data()
-    code = data["code"]
-    title = data["title"]
-    file_id = data["file_id"]
-    file_type = data["file_type"]
-
-    success = await db.add_movie(
-        code=code,
-        title=title,
-        file_id=file_id,
-        file_type=file_type,
-        caption=caption,
-        added_by=message.from_user.id,
-    )
-    await state.clear()
-
-    if success:
-        text = (
-            f"{PE_CHECK} <b>Kino muvaffaqiyatli qo'shildi!</b>\n"
-            f"{'━' * 28}\n\n"
-            f"{PE_MOVIE} <b>{title}</b>\n"
-            f"{PE_NUMBER} Kod: <code>{code}</code>\n"
-            f"{PE_STAR} Turi: {file_type}\n"
-        )
-        if caption:
-            text += f"{PE_INFO} Caption: {caption}\n"
-    else:
-        text = (
-            f"{PE_CROSS} <b>Xatolik!</b>\n\n"
-            f"{PE_WARNING} Kino qo'shishda muammo yuz berdi."
-        )
-
-    await message.answer(
-        text, reply_markup=get_admin_menu_kb(), parse_mode="HTML"
-    )
-    await _show_admin_panel(message)
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  KINO O'CHIRISH
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-@router.callback_query(F.data == "admin:delete_movie")
-async def cb_delete_movie_start(
-    callback: CallbackQuery, state: FSMContext
-) -> None:
-    if not _is_admin(callback.from_user.id):
-        await callback.answer("Ruxsat yo'q", show_alert=True)
-        return
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  BAZANI ZAXIRALASH (BACKUP)
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-from aiogram.types import FSInputFile
-
-@router.callback_query(F.data == "admin:backup")
-async def cb_admin_backup(callback: CallbackQuery) -> None:
-    if not _is_admin(callback.from_user.id):
-        return
-    import os
-    db_path = "database/kino_bot.db"
-    if os.path.exists(db_path):
-        document = FSInputFile(db_path)
-        await callback.message.answer_document(
-            document,
-            caption=f"{PE_CHECK} <b>Baza muvaffaqiyatli yuklab olindi!</b>",
-            parse_mode="HTML"
-        )
-    else:
-        await callback.answer("Baza fayli topilmadi!", show_alert=True)
-    await callback.answer()
-
-#  KANALDAGI POSTLARGA AVTOMAT TUGMA QO'SHISH
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-import re
-
-@router.channel_post()
-async def auto_add_button_to_channel_post(message: Message, bot: Bot) -> None:
-    """Kanalga yozilgan postda #kino_123 kabi kod bo'lsa avtomat tugma ulaydi."""
-    text = message.text or message.caption
-    if not text:
-        return
-    
-    # #kino_ kodi borligini tekshiramiz
-    match = re.search(r'#kino_(\d+)', text)
-    if match:
-        code = match.group(1)
-        
-        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-        from utils.premium_emoji import ID_SEARCH
-        
-        bot_info = await bot.get_me()
-        url = f"https://t.me/{bot_info.username}?start={code}"
-        
-        kb = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text=" Kinoni ko'rish",
-                        url=url,
-                        icon_custom_emoji_id=ID_SEARCH,
-                        style="success"
-                    )
-                ]
-            ]
-        )
-        
-        try:
-            await bot.edit_message_reply_markup(
-                chat_id=message.chat.id,
-                message_id=message.message_id,
-                reply_markup=kb
-            )
-        except Exception as e:
-            import logging
-            logging.error(f"Kanal postiga tugma qo'shishda xatolik: {e}")
 
 
 async def _save_movie(
@@ -1193,3 +878,4 @@ async def cb_remove_channel(
         reply_markup=get_channel_management_kb(channels),
         parse_mode="HTML",
     )
+
