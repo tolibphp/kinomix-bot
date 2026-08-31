@@ -65,8 +65,9 @@ class SubscriptionMiddleware(BaseMiddleware):
                     not_subscribed.append(
                         {
                             "channel_id": ch["channel_id"],
-                            "channel_username": ch["channel_username"],
-                            "channel_title": ch["channel_title"],
+                            "channel_username": ch.get("channel_username"),
+                            "channel_title": ch.get("channel_title"),
+                            "invite_link": ch.get("invite_link"),
                         }
                     )
             except Exception:

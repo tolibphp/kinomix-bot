@@ -54,10 +54,18 @@ class Database:
                 channel_id       INTEGER UNIQUE NOT NULL,
                 channel_username TEXT,
                 channel_title    TEXT,
+                invite_link      TEXT,
                 added_at         TEXT DEFAULT (datetime('now'))
             );
             """
         )
+        
+        # Migration for invite_link
+        try:
+            await self.db.execute("ALTER TABLE channels ADD COLUMN invite_link TEXT")
+        except Exception:
+            pass
+            
         await self.db.commit()
 
     # ── Foydalanuvchilar ────────────────────────────
@@ -189,13 +197,14 @@ class Database:
         channel_id: int,
         channel_username: str | None,
         channel_title: str | None,
+        invite_link: str | None = None
     ) -> bool:
         try:
             await self.db.execute(
                 "INSERT OR REPLACE INTO channels "
-                "(channel_id, channel_username, channel_title) "
-                "VALUES (?, ?, ?)",
-                (channel_id, channel_username, channel_title),
+                "(channel_id, channel_username, channel_title, invite_link) "
+                "VALUES (?, ?, ?, ?)",
+                (channel_id, channel_username, channel_title, invite_link),
             )
             await self.db.commit()
             return True

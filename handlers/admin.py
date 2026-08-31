@@ -1152,14 +1152,6 @@ async def process_add_channel(
     channel_username = chat.username
     channel_title = chat.title
 
-    if not channel_username:
-        text = (
-            f"{PE_CROSS} <b>Kanal username'siz</b>\n\n"
-            f"{PE_INFO} Faqat public (username'li) kanallar qo'shilishi mumkin."
-        )
-        await message.answer(text, parse_mode="HTML")
-        return
-
     # Bot kanalda admin ekanligini tekshirish
     try:
         bot_member = await bot.get_chat_member(
@@ -1180,7 +1172,24 @@ async def process_add_channel(
         await message.answer(text, parse_mode="HTML")
         return
 
-    success = await db.add_channel(channel_id, channel_username, channel_title)
+    invite_link = None
+    if not channel_username:
+        try:
+            link_obj = await bot.create_chat_invite_link(
+                chat_id=channel_id,
+                name="Kino Bot Zayavka",
+                creates_join_request=True
+            )
+            invite_link = link_obj.invite_link
+        except Exception:
+            text = (
+                f"{PE_CROSS} <b>Maxfiy kanal uchun link yaratib bo'lmadi</b>\n\n"
+                f"{PE_INFO} Botga 'Foydalanuvchilarni qo'shish' huquqini bering."
+            )
+            await message.answer(text, parse_mode="HTML")
+            return
+
+    success = await db.add_channel(channel_id, channel_username, channel_title, invite_link)
     await state.clear()
 
     if success:
@@ -1188,8 +1197,11 @@ async def process_add_channel(
             f"{PE_CHECK} <b>Kanal qo'shildi!</b>\n"
             f"{'━' * 28}\n\n"
             f"{PE_CHANNEL} {channel_title}\n"
-            f"{PE_GLOBE} @{channel_username}"
         )
+        if channel_username:
+            text += f"{PE_GLOBE} @{channel_username}"
+        else:
+            text += f"{PE_LOCK} Maxfiy kanal (Zayavka orqali)"
     else:
         text = f"{PE_CROSS} <b>Kanal qo'shishda xatolik yuz berdi</b>"
 

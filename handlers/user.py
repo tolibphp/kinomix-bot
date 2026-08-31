@@ -5,7 +5,7 @@ from __future__ import annotations
 from aiogram import Bot, F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ChatJoinRequest
 
 from config import ADMIN_IDS
 from database.db import Database
@@ -209,6 +209,22 @@ async def reply_about(message: Message, state: FSMContext) -> None:
     await message.answer(
         text, reply_markup=get_back_kb(), parse_mode="HTML"
     )
+
+@router.chat_join_request()
+async def approve_join_request(join_request: ChatJoinRequest, bot: Bot) -> None:
+    """Maxfiy kanalga zayavka tashlaganlarni avtomat qabul qiladi."""
+    try:
+        await bot.approve_chat_join_request(
+            chat_id=join_request.chat.id,
+            user_id=join_request.from_user.id
+        )
+        await bot.send_message(
+            chat_id=join_request.from_user.id,
+            text=f"✅ <b>{join_request.chat.title}</b> kanaliga so'rovingiz qabul qilindi!\nEndi botdan bemalol foydalanishingiz mumkin.",
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -23,16 +23,23 @@ def get_subscription_kb(
     """Majburiy obuna kanallar klaviaturasi."""
     builder = InlineKeyboardBuilder()
     for ch in channels:
-        username = ch["channel_username"] or ""
-        title = ch["channel_title"] or username
-        builder.row(
-            InlineKeyboardButton(
-                text=f" {title}",
-                url=f"https://t.me/{username.lstrip('@')}",
-                icon_custom_emoji_id=ID_FORWARD,
-                style="primary"
+        username = ch.get("channel_username")
+        title = ch.get("channel_title") or username or "Kanal"
+        invite_link = ch.get("invite_link")
+        
+        # Agar invite_link bo'lsa, o'shani ishlatamiz.
+        # Agar yo'q bo'lsa username orqali public link yasaymiz.
+        url = invite_link if invite_link else f"https://t.me/{username.lstrip('@')}" if username else ""
+        
+        if url:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f" {title}",
+                    url=url,
+                    icon_custom_emoji_id=ID_FORWARD,
+                    style="primary"
+                )
             )
-        )
     builder.row(
         InlineKeyboardButton(
             text=" Tekshirish",
