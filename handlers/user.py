@@ -195,16 +195,17 @@ async def reply_about(message: Message, state: FSMContext) -> None:
     await state.clear()
     text = (
         f"{PE_DIAMOND} <b>Kino Bot haqida</b>\n"
-        f"{'━' * 26}\n\n"
+        f"{'➖' * 26}\n\n"
         f"{PE_ROBOT} Bu bot orqali siz turli janrdagi\n"
         f"kinolarni topishingiz mumkin.\n\n"
         f"{PE_CLAPPER} <b>Imkoniyatlar:</b>\n\n"
         f"  {PE_SEARCH} Kod bo'yicha tez qidirish\n"
         f"  {PE_STAR} Nom bo'yicha qidirish\n"
         f"  {PE_FIRE} Mashhur kinolar ro'yxati\n"
-        f"  {PE_SPARKLE} Yangi kinolar\n\n"
-        f"{'━' * 26}\n"
-        f"{PE_SHIELD} <b>Barcha huquqlar himoyalangan.</b>"
+        f"  {PE_SPARKLE} Yangi kinolar\n"
+        f"  {PE_CHECK} Uzluksiz xotira (Volume) yoqilgan 🚀\n\n"
+        f"{'➖' * 26}\n"
+        f"{PE_SHIELD} <b>Barcha huquqlar himoyalangan. (V 2.0)</b>"
     )
     await message.answer(
         text, reply_markup=get_back_kb(), parse_mode="HTML"
