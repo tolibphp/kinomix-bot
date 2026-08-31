@@ -340,47 +340,25 @@ async def cb_post_channel_selected(callback: CallbackQuery, state: FSMContext) -
     await callback.answer()
 
 
-@router.message(ChannelPostStates.waiting_for_code, F.text)
+@router.message(ChannelPostStates.waiting_for_code, ~F.text.startswith('/'))
 async def post_code_received(message: Message, state: FSMContext) -> None:
     code = message.text.strip()
     await state.update_data(post_code=code)
     await state.set_state(ChannelPostStates.waiting_for_media)
     text = (
-        f"{PE_CLAPPER} <b>Kino uchun rasm yoki qisqa video yuboring</b>"
+        f"{PE_CLAPPER} <b>Kino postini (rasm/video va matn) birga yuboring!</b>\n\n"
+        f"{PE_INFO} Shunda matndagi <b>Premium emojilar</b> huddi o'zidek kanalga chiqadi.\n"
+        f"Matnsiz faqat rasm yuborsangiz ham bo'ladi."
     )
     from keyboards.inline_kb import get_admin_back_kb
     await message.answer(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
 
 
-@router.message(ChannelPostStates.waiting_for_media, F.photo | F.video | F.document)
-async def post_media_received(message: Message, state: FSMContext) -> None:
-    if message.photo:
-        file_id = message.photo[-1].file_id
-        file_type = "photo"
-    elif message.video:
-        file_id = message.video.file_id
-        file_type = "video"
-    else:
-        file_id = message.document.file_id
-        file_type = "document"
-
-    await state.update_data(post_media_id=file_id, post_media_type=file_type)
-    await state.set_state(ChannelPostStates.waiting_for_caption)
-    text = (
-        f"{PE_PIN} <b>Kino haqida qisqa ma'lumot (caption) yozing</b>"
-    )
-    from keyboards.inline_kb import get_admin_back_kb
-    await message.answer(text, reply_markup=get_admin_back_kb(), parse_mode="HTML")
-
-
-@router.message(ChannelPostStates.waiting_for_caption, F.text)
-async def post_caption_received(message: Message, state: FSMContext, bot: Bot) -> None:
-    caption = message.html_text
+@router.message(ChannelPostStates.waiting_for_media, ~F.text.startswith('/'))
+async def post_media_received(message: Message, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
     channel_id = data["post_channel_id"]
     code = data["post_code"]
-    media_id = data["post_media_id"]
-    media_type = data["post_media_type"]
     await state.clear()
 
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -403,12 +381,12 @@ async def post_caption_received(message: Message, state: FSMContext, bot: Bot) -
     )
 
     try:
-        if media_type == "photo":
-            await bot.send_photo(chat_id=channel_id, photo=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
-        elif media_type == "video":
-            await bot.send_video(chat_id=channel_id, video=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
-        else:
-            await bot.send_document(chat_id=channel_id, document=media_id, caption=caption, reply_markup=kb, parse_mode="HTML")
+        await bot.copy_message(
+            chat_id=channel_id,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id,
+            reply_markup=kb
+        )
         
         await message.answer(f"{PE_CHECK} <b>Post muvaffaqiyatli kanalga yuborildi!</b>", parse_mode="HTML")
         await _show_admin_panel(message)
