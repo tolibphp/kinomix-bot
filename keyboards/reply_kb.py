@@ -18,19 +18,19 @@ def get_main_menu_kb() -> ReplyKeyboardMarkup:
                 KeyboardButton(
                     text=" Kino qidirish",
                     icon_custom_emoji_id=ID_SEARCH,
-                    style="primary"
+                    style="success"
                 ),
                 KeyboardButton(
                     text=" Mashhur kinolar",
                     icon_custom_emoji_id=ID_FIRE,
-                    style="primary"
+                    style="success"
                 ),
             ],
             [
                 KeyboardButton(
                     text=" Yangi kinolar",
                     icon_custom_emoji_id=ID_SPARKLE,
-                    style="primary"
+                    style="success"
                 ),
                 KeyboardButton(
                     text=" Biz haqimizda",
@@ -59,19 +59,19 @@ def get_admin_menu_kb() -> ReplyKeyboardMarkup:
                 KeyboardButton(
                     text=" Kino qidirish",
                     icon_custom_emoji_id=ID_SEARCH,
-                    style="primary"
+                    style="success"
                 ),
                 KeyboardButton(
                     text=" Mashhur kinolar",
                     icon_custom_emoji_id=ID_FIRE,
-                    style="primary"
+                    style="success"
                 ),
             ],
             [
                 KeyboardButton(
                     text=" Yangi kinolar",
                     icon_custom_emoji_id=ID_SPARKLE,
-                    style="primary"
+                    style="success"
                 ),
                 KeyboardButton(
                     text=" Biz haqimizda",
