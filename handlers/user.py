@@ -295,13 +295,17 @@ async def process_search_query(
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+async def _safe_edit(callback: CallbackQuery, text: str, reply_markup) -> None:
+    if callback.message.text:
+        await callback.message.edit_text(text, reply_markup=reply_markup, parse_mode="HTML")
+    else:
+        await callback.message.answer(text, reply_markup=reply_markup, parse_mode="HTML")
+
 @router.callback_query(F.data == "main_menu")
 async def cb_main_menu(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     text = f"{PE_HOME} <b>Bosh menyu</b>"
-    await callback.message.edit_text(
-        text, reply_markup=get_main_inline_kb(), parse_mode="HTML"
-    )
+    await _safe_edit(callback, text, get_main_inline_kb())
     await callback.answer()
 
 
@@ -313,9 +317,7 @@ async def cb_search(callback: CallbackQuery, state: FSMContext) -> None:
         f"{'━' * 24}\n\n"
         f"{PE_INFO} Kino nomini yoki kodini yuboring."
     )
-    await callback.message.edit_text(
-        text, reply_markup=get_back_kb(), parse_mode="HTML"
-    )
+    await _safe_edit(callback, text, get_back_kb())
     await callback.answer()
 
 
@@ -330,9 +332,7 @@ async def cb_popular(
             f"{PE_INFO} <b>Hozircha kinolar mavjud emas</b>\n\n"
             f"{PE_MOVIE} Tez orada yangi kinolar qo'shiladi!"
         )
-        await callback.message.edit_text(
-            text, reply_markup=get_back_kb(), parse_mode="HTML"
-        )
+        await _safe_edit(callback, text, get_back_kb())
         await callback.answer()
         return
 
@@ -341,11 +341,7 @@ async def cb_popular(
         f"{'━' * 26}\n\n"
         f"{PE_FIRE} TOP-{len(movies)} kinolar:"
     )
-    await callback.message.edit_text(
-        text,
-        reply_markup=get_popular_movies_kb(movies),
-        parse_mode="HTML",
-    )
+    await _safe_edit(callback, text, get_popular_movies_kb(movies))
     await callback.answer()
 
 
@@ -360,9 +356,7 @@ async def cb_recent(
             f"{PE_INFO} <b>Hozircha kinolar mavjud emas</b>\n\n"
             f"{PE_MOVIE} Tez orada yangi kinolar qo'shiladi!"
         )
-        await callback.message.edit_text(
-            text, reply_markup=get_back_kb(), parse_mode="HTML"
-        )
+        await _safe_edit(callback, text, get_back_kb())
         await callback.answer()
         return
 
@@ -371,11 +365,7 @@ async def cb_recent(
         f"{'━' * 26}\n\n"
         f"{PE_SPARKLE} So'nggi {len(movies)} ta kino:"
     )
-    await callback.message.edit_text(
-        text,
-        reply_markup=get_recent_movies_kb(movies),
-        parse_mode="HTML",
-    )
+    await _safe_edit(callback, text, get_recent_movies_kb(movies))
     await callback.answer()
 
 
@@ -387,9 +377,7 @@ async def cb_get_movie(
     movie = await db.get_movie_by_code(code)
     if not movie:
         text = f"{PE_CROSS} <b>Kino topilmadi</b>"
-        await callback.message.edit_text(
-            text, reply_markup=get_back_kb(), parse_mode="HTML"
-        )
+        await _safe_edit(callback, text, get_back_kb())
         await callback.answer()
         return
 
@@ -414,11 +402,7 @@ async def cb_search_page(
         f"{'━' * 24}\n\n"
         f"{PE_INFO} Sahifa: {page + 1}"
     )
-    await callback.message.edit_text(
-        text,
-        reply_markup=get_search_results_kb(movies, page),
-        parse_mode="HTML",
-    )
+    await _safe_edit(callback, text, get_search_results_kb(movies, page))
     await callback.answer()
 
 

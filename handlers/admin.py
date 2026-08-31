@@ -50,6 +50,7 @@ from utils.premium_emoji import (
     PE_MEGAPHONE,
     PE_MOVIE,
     PE_NUMBER,
+    PE_PIN,
     PE_SEND,
     PE_SPARKLE,
     PE_STAR,
