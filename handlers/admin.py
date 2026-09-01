@@ -1222,11 +1222,13 @@ async def process_add_channel(
     success = await db.add_channel(channel_id, channel_username, channel_title, invite_link)
     await state.clear()
 
+    import html
+    safe_title = html.escape(channel_title) if channel_title else "Kanal"
     if success:
         text = (
             f"{PE_CHECK} <b>Kanal qo'shildi!</b>\n"
             f"{'━' * 28}\n\n"
-            f"{PE_CHANNEL} {channel_title}\n"
+            f"{PE_CHANNEL} <b>{safe_title}</b>\n"
         )
         if channel_username:
             text += f"{PE_GLOBE} @{channel_username}"
