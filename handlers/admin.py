@@ -572,8 +572,8 @@ async def auto_add_button_to_channel_post(message: Message, bot: Bot) -> None:
     if not text:
         return
     
-    # #kino_ kodi borligini tekshiramiz
-    match = re.search(r'#kino_(\d+)', text)
+    # #kinokodi: 123 kodi borligini tekshiramiz
+    match = re.search(r'#kinokodi:\s*(\d+)', text, re.IGNORECASE)
     if match:
         code = match.group(1)
         
